@@ -15,6 +15,9 @@ from entmax import sparsemax
 app = Flask(__name__)
 app.secret_key = "finrisk-dev-secret-key"
 app.permanent_session_lifetime = timedelta(days=365)
+
+os.makedirs("instance", exist_ok=True)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///finrisk.db"
 db = SQLAlchemy(app)
 
