@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}FinRisk - Watchlist{% endblock %}
+{% block content %}
+
+<div class="container py-5">
+
+  <h1 class="h3 mb-4"><i class="bi bi-star text-primary me-1"></i> Watchlist</h1>
+
+  {% if not results %}
+  <div class="card shadow-sm">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-star fs-1 text-secondary d-block mb-3"></i>
+      <p class="text-secondary mb-3">No companies on your watchlist yet.</p>
+      <a href="/" class="btn btn-primary"><i class="bi bi-search"></i> Search a company</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Company</th>
+            <th>Sector</th>
+            <th>Fraud</th>
+            <th>Distress</th>
+            <th>Credit</th>
+            <th>Manipulation</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          <tr>
+            <td class="font-monospace"><a href="/results?ticker={{ r.ticker }}" class="text-decoration-none">{{ r.ticker }}</a></td>
+            {% if r.error %}
+            <td colspan="5" class="text-danger small">{{ r.error }}</td>
+            {% else %}
+            <td>{{ r.name }}</td>
+            <td class="text-secondary small">{{ r.sector }}</td>
+            <td><span class="badge text-bg-{{ r.tiers.fraud | tier_class }}">{{ r.tiers.fraud }}</span></td>
+            <td><span class="badge text-bg-{{ r.tiers.distress | tier_class }}">{{ r.tiers.distress }}</span></td>
+            <td><span class="badge text-bg-{{ r.tiers.credit | tier_class }}">{{ r.tiers.credit }}</span></td>
+            <td><span class="badge text-bg-{{ r.tiers.manip | tier_class }}">{{ r.tiers.manip }}</span></td>
+            {% endif %}
+            <td>
+              <form method="POST" action="/watchlist/remove">
+                <input type="hidden" name="ticker" value="{{ r.ticker }}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

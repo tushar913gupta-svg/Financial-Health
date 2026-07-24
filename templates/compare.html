@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}FinRisk - Compare{% endblock %}
+{% block content %}
+
+<div class="container py-5">
+
+  <h1 class="h3 mb-2"><i class="bi bi-bar-chart-steps text-primary me-1"></i> Compare companies</h1>
+  <p class="text-secondary mb-4">Add tickers one at a time, then rank them side by side across all four risk dimensions.</p>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <form method="POST" action="/compare" id="compareForm">
+        <div class="input-group mb-3" style="max-width: 420px;">
+          <span class="input-group-text bg-body-tertiary"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control font-monospace text-uppercase" id="tickerInput" placeholder="Type a ticker and press Enter" autocomplete="off" spellcheck="false" />
+          <button class="btn btn-outline-light" id="addBtn" type="button"><i class="bi bi-plus-lg"></i> Add</button>
+        </div>
+
+        <div id="chipContainer" class="mb-3 d-flex flex-wrap gap-2">
+          {% for t in submitted %}
+          <span class="badge text-bg-secondary font-monospace d-inline-flex align-items-center gap-1" data-ticker="{{ t }}">
+            {{ t }}
+            <button type="button" class="btn-close btn-close-white chip-remove" aria-label="Remove"></button>
+          </span>
+          <input type="hidden" name="tickers" value="{{ t }}" data-ticker="{{ t }}" />
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="compareBtn" {{ "disabled" if not submitted }}>
+          <i class="bi bi-lightning-charge-fill"></i> Compare
+        </button>
+        <button type="submit" formaction="/compare/export" class="btn btn-outline-light" id="exportBtn" {{ "disabled" if not submitted }}>
+          <i class="bi bi-download"></i> Export CSV
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if results %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <span class="text-secondary small d-block mb-3"><i class="bi bi-sort-down"></i> Ranked highest to lowest fraud risk</span>
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Company</th>
+            <th>Sector</th>
+            <th>Fraud</th>
+            <th>Distress</th>
+            <th>Credit</th>
+            <th>Manipulation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          <tr>
+            <td class="font-monospace">{{ r.ticker }}</td>
+            {% if r.error %}
+            <td colspan="6" class="text-danger small">{{ r.error }}</td>
+            {% else %}
+            <td>{{ r.name }}</td>
+            <td class="text-secondary small">{{ r.sector }}</td>
+            <td><span class="badge text-bg-{{ r.tiers.fraud | tier_class }}">{{ r.tiers.fraud }}</span></td>
+            <td><span class="badge text-bg-{{ r.tiers.distress | tier_class }}">{{ r.tiers.distress }}</span></td>
+            <td><span class="badge text-bg-{{ r.tiers.credit | tier_class }}">{{ r.tiers.credit }}</span></td>
+            <td><span class="badge text-bg-{{ r.tiers.manip | tier_class }}">{{ r.tiers.manip }}</span></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/compare.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}FinRisk - Search{% endblock %}
+{% block content %}
+
+<div class="hero-glow">
+  <div class="container py-5 text-center" style="max-width: 780px;">
+    <div class="d-inline-flex align-items-center gap-2 text-primary small fw-semibold text-uppercase mb-3">
+      <i class="bi bi-shield-check"></i>
+      Corporate financial intelligence
+    </div>
+    <h1 class="display-4 fw-bold mb-3">Is your company<br>hiding something?</h1>
+    <p class="lead text-secondary mb-4 col-lg-10 mx-auto">
+      Enter any public ticker. Five years of financials and 56 engineered features are run through a deep learning model, then ranked against sector peers across four risk dimensions.
+    </p>
+
+    <form class="mx-auto mb-5" action="/results" method="GET" style="max-width: 460px;">
+      <div class="input-group input-group-lg shadow-sm">
+        <span class="input-group-text bg-body-tertiary border-end-0">
+          <i class="bi bi-search"></i>
+        </span>
+        <input type="text" name="ticker" class="form-control font-monospace text-uppercase border-start-0" placeholder="TICKER" autocomplete="off" spellcheck="false" required />
+        <button type="submit" class="btn btn-primary px-4">Analyze</button>
+      </div>
+    </form>
+
+    <div class="row g-3 text-start">
+      <div class="col-md-4">
+        <div class="stat-pill p-3 d-flex align-items-center gap-3">
+          <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-database"></i>
+          </div>
+          <div>
+            <div class="fw-bold">146,000+</div>
+            <div class="text-secondary small">Company-years trained on</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-pill p-3 d-flex align-items-center gap-3">
+          <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-diagram-3"></i>
+          </div>
+          <div>
+            <div class="fw-bold">56</div>
+            <div class="text-secondary small">Engineered features</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-pill p-3 d-flex align-items-center gap-3">
+          <div class="icon-circle bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+          <div>
+            <div class="fw-bold">0.0912</div>
+            <div class="text-secondary small">NDCG@1% score</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

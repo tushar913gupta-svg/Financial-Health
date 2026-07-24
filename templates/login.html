@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}FinRisk - Login{% endblock %}
+{% block content %}
+
+<div class="container py-5" style="max-width: 380px;">
+  <h1 class="h3 mb-4 text-center">Log in</h1>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      {% if error %}
+      <div class="alert alert-danger small">{{ error }}</div>
+      {% endif %}
+      <form method="POST" action="/login">
+        <div class="mb-3">
+          <label class="form-label small text-secondary">Username</label>
+          <input type="text" name="username" class="form-control" autocomplete="username" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label small text-secondary">Password</label>
+          <input type="password" name="password" class="form-control" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Log in</button>
+      </form>
+    </div>
+  </div>
+
+  <p class="text-center text-secondary small mt-3">
+    No account yet? <a href="/signup">Sign up</a>
+  </p>
+</div>
+
+{% endblock %}

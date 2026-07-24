@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}FinRisk - {{ ticker }}{% endblock %}
+{% block content %}
+
+{% if result.error %}
+<div class="container py-5">
+  <div class="alert alert-danger">{{ result.error }}</div>
+  <a href="/" class="btn btn-outline-light">Back to search</a>
+</div>
+{% else %}
+
+<div class="container py-5">
+
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 border-bottom pb-4 mb-4">
+    <div class="d-flex align-items-start gap-3">
+      <div class="avatar-circle">{{ result.ticker[:2] }}</div>
+      <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <h1 class="h2 mb-0">{{ result.name }}</h1>
+          <span class="badge text-bg-primary font-monospace">{{ result.ticker }}</span>
+          {% if current_user %}
+          <form method="POST" action="/watchlist/add" class="d-inline">
+            <input type="hidden" name="ticker" value="{{ result.ticker }}" />
+            <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-star"></i> Watchlist</button>
+          </form>
+          {% else %}
+          <a href="/login" class="btn btn-sm btn-outline-warning"><i class="bi bi-star"></i> Watchlist</a>
+          {% endif %}
+        </div>
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+          <span class="badge text-bg-secondary">{{ result.sector }}</span>
+          <span class="badge text-bg-secondary">{{ result.industry }}</span>
+          <span class="badge text-bg-secondary">{{ result.country }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-0 border rounded-3 text-center overflow-hidden shadow-sm">
+      <div class="col border-end px-3 py-2">
+        <div class="text-secondary small text-uppercase">Market Cap</div>
+        <div class="fw-bold">{{ result.info.marketCap | fmt_large }}</div>
+      </div>
+      <div class="col border-end px-3 py-2">
+        <div class="text-secondary small text-uppercase">P/E Ratio</div>
+        <div class="fw-bold">{{ result.info.trailingPE | fmt_num }}</div>
+      </div>
+      <div class="col border-end px-3 py-2">
+        <div class="text-secondary small text-uppercase">Revenue TTM</div>
+        <div class="fw-bold">{{ result.info.totalRevenue | fmt_large }}</div>
+      </div>
+      <div class="col px-3 py-2">
+        <div class="text-secondary small text-uppercase">Employees</div>
+        <div class="fw-bold">{{ "{:,}".format(result.info.fullTimeEmployees) if result.info.fullTimeEmployees else "—" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-5 shadow-sm">
+    <div class="card-body">
+      <h2 class="h5 fw-bold"><i class="bi bi-info-circle me-1 text-primary"></i> About</h2>
+      <p class="mb-0 text-secondary">{{ result.info.longBusinessSummary or "No description available." }}</p>
+    </div>
+  </div>
+
+  <h2 class="h5 fw-bold mb-3">Risk assessment</h2>
+  {% set has_peers = result.tiers.values() | select("equalto", "Unknown") | list | length < 4 %}
+  {% if not has_peers %}
+  <div class="alert alert-warning font-monospace small">
+    Sector peer scores not yet precomputed for this sector — risk tiers unavailable.
+  </div>
+  {% endif %}
+
+  <div class="row g-3 mb-5">
+    {% for key, label, description, icon in [
+      ("fraud", "Accounting Fraud", "Financial statement misstatement relative to sector peers", "bi-shield-exclamation"),
+      ("distress", "Financial Distress", "Negative earnings, weak cash flow, and high leverage", "bi-graph-down-arrow"),
+      ("credit", "Credit Risk", "Liquidity constraints and inability to service debt", "bi-credit-card"),
+      ("manip", "Earnings Manipulation", "Accrual manipulation and soft-asset buildup", "bi-arrow-repeat")
+    ] %}
+    {% set tier = result.tiers[key] %}
+    {% set tc = tier | tier_class %}
+    <div class="col-6 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body text-center">
+          <div class="icon-circle bg-{{ tc }} bg-opacity-10 text-{{ tc }} mx-auto mb-3">
+            <i class="bi {{ icon }}"></i>
+          </div>
+          <div class="fw-bold fs-4 text-{{ tc }}">{{ tier }}</div>
+          <div class="fw-semibold small mt-2">{{ label }}</div>
+          <p class="text-secondary small mt-1 mb-0">{{ description }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 class="h5 fw-bold mb-3">Key financials</h2>
+  <table class="table table-bordered mb-5 shadow-sm">
+    <tbody>
+      <tr>
+        <td>Profit Margin</td><td class="text-end font-monospace">{{ result.info.profitMargins | fmt_pct }}</td>
+        <td>Return on Assets</td><td class="text-end font-monospace">{{ result.info.returnOnAssets | fmt_pct }}</td>
+      </tr>
+      <tr>
+        <td>Return on Equity</td><td class="text-end font-monospace">{{ result.info.returnOnEquity | fmt_pct }}</td>
+        <td>Debt / Equity</td><td class="text-end font-monospace">{{ (result.info.debtToEquity | fmt_num) ~ "%" if result.info.debtToEquity is not none else "—" }}</td>
+      </tr>
+      <tr>
+        <td>Current Ratio</td><td class="text-end font-monospace">{{ result.info.currentRatio | fmt_num }}</td>
+        <td>Revenue Growth</td><td class="text-end font-monospace">{{ result.info.revenueGrowth | fmt_pct }}</td>
+      </tr>
+      <tr>
+        <td>Gross Margin</td><td class="text-end font-monospace">{{ result.info.grossMargins | fmt_pct }}</td>
+        <td>EPS TTM</td><td class="text-end font-monospace">{{ ("$" ~ (result.info.trailingEps | fmt_num)) if result.info.trailingEps is not none else "—" }}</td>
+      </tr>
+      <tr>
+        <td>Institutional Ownership</td><td class="text-end font-monospace" colspan="3">{{ result.info.heldPercentInstitutions | fmt_pct }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 class="h5 fw-bold mb-3"><i class="bi bi-newspaper text-primary me-1"></i> Recent news</h2>
+  {% if result.news %}
+  <div class="list-group mb-5 shadow-sm">
+    {% for item in result.news %}
+    <a href="{{ item.link }}" target="_blank" rel="noopener" class="list-group-item list-group-item-action bg-body-tertiary">
+      <div class="fw-semibold">{{ item.title }}</div>
+      <div class="text-secondary small">{{ item.publisher }}</div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-secondary mb-5">No recent news available.</p>
+  {% endif %}
+
+  <a href="/" class="btn btn-outline-light">Search another company</a>
+
+</div>
+
+{% endif %}
+{% endblock %}
